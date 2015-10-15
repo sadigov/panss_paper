@@ -1,0 +1,54 @@
+model
+{
+    for (t in 1:T) {
+        for (i in 1:n) {
+            for (j in 1:p) {
+                Y[i, j, t] ~ dcat(prob[i, j, t, 1:K[j]])
+                for (k in 1:(K[j] - 1)) {
+                  logit(P[i, j, t, k]) <- kappa[j, k] - alpha[j] * 
+                    theta[i, t]
+                }
+                P[i, j, t, K[j]] <- 1
+            }
+            for (j in 1:p) {
+                prob[i, j, t, 1] <- P[i, j, t, 1]
+                for (k in 2:K[j]) {
+                  prob[i, j, t, k] <- P[i, j, t, k] - P[i, j, 
+                    t, k - 1]
+                }
+            }
+        }
+    }
+    for (i in 1:n) {
+        theta[i, 1:T] ~ dmnorm(mu.theta[], Pr.theta[, ])
+    }
+    mu.theta[1] <- 0.00000E+00
+    for (t in 2:T) {
+        mu.theta[t] ~ dnorm(m.mu.theta, pr.mu.theta)
+    }
+    pr.mu.theta <- pow(s.mu.theta, -2)
+    sigsq.theta <- 1
+    Sigma.theta[1, 1] <- sigsq.theta
+    for (t in 2:T) {
+        Sigma.theta[t, t] <- sigsq.theta
+        for (j in 1:(t - 1)) {
+            Sigma.theta[t, j] <- sigsq.theta * pow(rho, t - j)
+            Sigma.theta[j, t] <- Sigma.theta[t, j]
+        }
+    }
+    Pr.theta[1:T, 1:T] <- inverse(Sigma.theta[, ])
+    rho ~ dunif(-1, 1)
+    for (j in 1:p) {
+        alpha[j] ~ dnorm(m.alpha, pr.alpha)  I(0.00000E+00, 
+            )
+    }
+    pr.alpha <- pow(s.alpha, -2)
+    for (j in 1:p) {
+        for (k in 1:K[j] - 1) {
+            kappa.star[j, k] ~ dnorm(m.kappa, pr.kappa)
+            kappa[j, k] <- ranked(kappa.star[j, 1:(K[j] - 1)], 
+                k)
+        }
+    }
+    pr.kappa <- pow(s.kappa, -2)
+}
