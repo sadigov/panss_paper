@@ -1,7 +1,0 @@
-This file aims to be removed when Alexandre will know how to use git.
-Let's see how this modify the file.
-Writing three
-	more
-	lines.
-
-Let's modify the file again.
